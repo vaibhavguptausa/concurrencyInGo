@@ -24,7 +24,7 @@ func subscribe(c *sync.Cond, fn func()) {
 }
 
 func main() {
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 1; i++ {
 		c := sync.NewCond(&sync.Mutex{})
 		button := Button{Clicked: c}
 		wg := sync.WaitGroup{}
@@ -59,8 +59,8 @@ func main() {
 			fmt.Println("I am third")
 			wg.Done()
 		}, ready)
-		ready.Wait()
 		button.Clicked.Broadcast()
+		ready.Wait()
 		wg.Wait()
 		fmt.Println("all waiting ------")
 	}

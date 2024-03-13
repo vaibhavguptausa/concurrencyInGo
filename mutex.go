@@ -23,7 +23,81 @@ func subscribeM(c *sync.Cond, fn func()) {
 	wg1.Wait()
 }
 
+func mutexExample() {
+	var count int
+	var lock sync.Mutex
+	increment := func() {
+		lock.Lock()
+		defer lock.Unlock()
+		count++
+		fmt.Printf("Incrementing: %d\n", count)
+	}
+	decrement := func() {
+		lock.Lock()
+		defer lock.Unlock()
+		count--
+		fmt.Printf("decrementing: %d\n", count)
+	}
+
+	var arithmetic sync.WaitGroup
+	for i := 0; i < 5; i++ {
+		arithmetic.Add(1)
+		go func() {
+			defer arithmetic.Done()
+			increment()
+		}()
+	}
+	for i := 0; i < 5; i++ {
+		arithmetic.Add(1)
+		go func() {
+			defer arithmetic.Done()
+			decrement()
+		}()
+	}
+	arithmetic.Wait()
+	fmt.Println("Complete")
+}
+
+func noMutexExample() {
+	var count int
+	increment := func() {
+
+		count++
+		fmt.Printf("Incrementing: %d\n", count)
+	}
+	decrement := func() {
+
+		count--
+		fmt.Printf("decrementing: %d\n", count)
+	}
+
+	var arithmetic sync.WaitGroup
+	for i := 0; i < 5; i++ {
+		arithmetic.Add(1)
+		go func() {
+			defer arithmetic.Done()
+			increment()
+		}()
+	}
+	for i := 0; i < 5; i++ {
+		arithmetic.Add(1)
+		go func() {
+			defer arithmetic.Done()
+			decrement()
+		}()
+	}
+	arithmetic.Wait()
+	fmt.Println("Complete")
+}
+
 func main() {
+	// if our lock works what should be the final value of count ?
+	// mutex guarantees that the end result will be 0 while no mutex does not
+	//mutexExample()
+	noMutexExample()
+}
+
+func mutexWithCond() {
 	c := sync.NewCond(&sync.Mutex{})
 	button := ButtonMutex{Clicked: c}
 	wg := sync.WaitGroup{}

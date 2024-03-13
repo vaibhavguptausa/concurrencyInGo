@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-// Example shows how Once will focus on how many times do is called instead of getting called with different function hence the result is always  ?
+// Example shows how Once will focus on how many times do is called instead of getting called with different function hence the result is always  ? // we have also used this in payoutmerchantsvc although not needed.
 func main() {
 	once := sync.Once{}
 	counter := 0

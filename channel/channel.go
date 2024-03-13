@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 )
 
 func theChannel() {
@@ -18,11 +19,11 @@ func theChannel() {
 	// aayaKya here is a boolean which is an optional output, it just shows whether you are reading a message which was published by someone else
 	// or you are reading a default value from a  closed channel
 	kabootarKaMessage, aayaKya := <-stream
-	fmt.Printf("%v, %v", aayaKya, kabootarKaMessage)
+	fmt.Printf("%v, %v\n", aayaKya, kabootarKaMessage)
 
 	// each of the reads give you one value, once you get the value you stop reading
 	// if you want to read the second message you need to read again like mentioned below
-	// our main goroutine will wait till both the reads are done and hence are anonymous go
+	// our main goroutine will wait till both the reads are done and hence  anonymous go
 	// func will always return before main go routine
 
 	fmt.Println(<-stream)
@@ -83,6 +84,7 @@ func signalByClosing() {
 }
 
 // since we have a buffered channel here, we can push multiple values to it without it being read somewhere else.
+
 func aBufferedChannel() {
 	var stdOutBuff bytes.Buffer
 	defer stdOutBuff.WriteTo(os.Stdout)
@@ -90,16 +92,39 @@ func aBufferedChannel() {
 	initStream := make(chan int, 5)
 
 	go func() {
-		defer close(initStream)
 		defer fmt.Fprintf(&stdOutBuff, "producer done.\n")
 		for i := 0; i < 5; i++ {
 			fmt.Fprintf(&stdOutBuff, "sending: %d \n", i)
 			initStream <- i
 		}
 	}()
-
 	for val := range initStream {
 		fmt.Fprintf(&stdOutBuff, "received %d\n", val)
+		if val == 4 {
+			close(initStream)
+		}
+	}
+}
+
+// This method just shows that we have to close the channel or we will have deadlock, if we are closing the channel in the end we can iterate without any issue, as soon as we put a message in the channel we will receive it outside
+func aBufferedChannel2() {
+	var stdOutBuff bytes.Buffer
+	defer stdOutBuff.WriteTo(os.Stdout)
+
+	initStream := make(chan int, 5)
+
+	go func() {
+		defer close(initStream)
+		for i := 0; i < 5; i++ {
+			fmt.Println("sending ", i)
+			time.Sleep(1 * time.Second)
+			initStream <- i
+		}
+	}()
+	for val := range initStream {
+		fmt.Println("receiving  ", val)
+		if val == 4 {
+		}
 	}
 }
 
@@ -108,5 +133,6 @@ func main() {
 	//closedChannel()
 	//iteratingOverAChannel()
 	//signalByClosing()
-	aBufferedChannel()
+	//aBufferedChannel()
+	aBufferedChannel2()
 }
